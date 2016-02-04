@@ -1,0 +1,30 @@
+.container {
+    width: 960px;
+    margin: 0 auto;
+    padding: 10px;
+}
+.progressBar {
+    width: 100%;
+}
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+.card {
+    margin: 50px 10px;
+    padding: 10px;
+}
+.clear {
+    clear: both;
+}
+.danger {
+    color: #c0392b;
+}
+.success {
+    color: #27ae60;
+}
+.normal {
+    color: #2980b9;
+}

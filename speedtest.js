@@ -13,50 +13,82 @@ function getAvg(array) {
     }, 0);
 }
 
-var config = {
-    parallel: true,
-    serial: true,
-    files: [{
-        size: '1',
-        path: "/1KB.txt",
-        runs: 25
-    }, {
-        size: '10',
-        path: "/10KB.txt",
-        runs: 10
-    }, {
-        size: '100',
-        path: "/100KB.txt",
-        runs: 2
-    }]
-};
+(function() {
 
-function runTests() {
-    config.files.forEach(function(file, index) {
-        var timeTaken = [];
-        for (var i = 0; i < file.runs; i++) {
-            var startTime = +new Date;
-            fetch(file.path + '?' + (+new Date)).then(function() {
-                var row = document.getElementById(file.size);
+    var config = {
+        files: [{
+            size: '1',
+            path: "/1KB.txt",
+            runs: 25,
+            callDurations: []
+        }, {
+            size: '10',
+            path: "/10KB.txt",
+            runs: 10,
+            callDurations: []
+        }, {
+            size: '100',
+            path: "/100KB.txt",
+            runs: 2,
+            callDurations: []
+        }]
+    };
+
+    function runTests() {
+        var jobs = generateJobs();
+
+        var recursivelyRunJob = function() {
+
+            if (jobs.length == 0) return;
+
+            var calculateResponseTime = function() {
+                var endTime = +new Date;
+                var timeTaken = currentJob.callDurations;
+                timeTaken.push(endTime - startTime);
+            };
+
+            var updateUI = function() {
+                var timeTaken = currentJob.callDurations,
+                    row = document.getElementById(currentJob.size);
+
                 var requests = parseInt(row.getElementsByClassName('requests')[0].innerHTML);
                 row.getElementsByClassName('requests')[0].innerHTML = ++requests;
-                timeTaken.push(+new Date - startTime);
-                console.log(timeTaken);
                 row.getElementsByClassName('min')[0].innerHTML = getMin(timeTaken);
                 row.getElementsByClassName('max')[0].innerHTML = getMax(timeTaken);
                 row.getElementsByClassName('avg')[0].innerHTML = getAvg(timeTaken);
-                row.getElementsByClassName('speed')[0].innerHTML = file.size * 8 / (getAvg(timeTaken) / 1000);
-            });
-        }
-    });
-}
+                row.getElementsByClassName('speed')[0].innerHTML = currentJob.size * 8 / (getAvg(timeTaken) / 1000);
+            };
 
-function init() {
+
+            var currentJob = jobs.shift(),
+                startTime = +new Date,
+                resourceURL = currentJob.path + '?' + startTime;
+
+            fetch(resourceURL)
+                .then(response => response.text())
+                .then(calculateResponseTime)
+                .then(updateUI)
+                .then(recursivelyRunJob);
+        };
+
+        recursivelyRunJob();
+
+    }
+
+    function generateJobs() {
+        var jobs = [];
+        config.files.forEach(function(file, index) {
+            for (var i = 0; i < file.runs; i++) {
+                jobs.push(file);
+            }
+        });
+        return jobs;
+    }
+
     config.files.forEach(function(file, index) {
         var row = document.createElement('tr');
         row.setAttribute('id', file.size);
         row.innerHTML = '<td>' + file.size + ' KB</td>' +
-            '<td><progress id="" value="0" max="25" class="progressBar"></progress></td>' +
             '<td class="requests">0</td>' +
             '<td class="min">0</td>' +
             '<td class="max">0</td>' +
@@ -68,6 +100,5 @@ function init() {
     document
         .getElementById('run')
         .addEventListener('click', runTests);
-}
 
-init();
+})();

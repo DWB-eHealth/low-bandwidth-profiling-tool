@@ -7,13 +7,13 @@ function getMax(array) {
 }
 
 function getAvg(array) {
-    return array.reduce(function(sum, a, i, ar) {
+    return array.reduce(function (sum, a, i, ar) {
         sum += a;
         return i == ar.length - 1 ? (ar.length == 0 ? 0 : sum / ar.length) : sum
     }, 0);
 }
 
-(function() {
+(function () {
 
     var config = {
         files: [{
@@ -34,20 +34,20 @@ function getAvg(array) {
         }]
     };
 
-    function runTests() {
+    var runTests = function () {
         var jobs = generateJobs();
 
-        var recursivelyRunJob = function() {
+        var recursivelyRunJob = function () {
 
             if (jobs.length == 0) return;
 
-            var calculateResponseTime = function() {
+            var calculateResponseTime = function () {
                 var endTime = +new Date;
                 var timeTaken = currentJob.callDurations;
                 timeTaken.push(endTime - startTime);
             };
 
-            var updateUI = function() {
+            var updateUI = function () {
                 var timeTaken = currentJob.callDurations,
                     row = document.getElementById(currentJob.size);
 
@@ -64,8 +64,12 @@ function getAvg(array) {
                 startTime = +new Date,
                 resourceURL = currentJob.path + '?' + startTime;
 
+            var waitForRequestToComplete = function (response) {
+                return response.text();
+            };
+
             fetch(resourceURL)
-                .then(response => response.text())
+                .then(waitForRequestToComplete)
                 .then(calculateResponseTime)
                 .then(updateUI)
                 .then(recursivelyRunJob);
@@ -73,19 +77,19 @@ function getAvg(array) {
 
         recursivelyRunJob();
 
-    }
+    };
 
-    function generateJobs() {
+    var generateJobs = function () {
         var jobs = [];
-        config.files.forEach(function(file, index) {
+        config.files.forEach(function (file) {
             for (var i = 0; i < file.runs; i++) {
                 jobs.push(file);
             }
         });
         return jobs;
-    }
+    };
 
-    config.files.forEach(function(file, index) {
+    config.files.forEach(function (file) {
         var row = document.createElement('tr');
         row.setAttribute('id', file.size);
         row.innerHTML = '<td>' + file.size + ' KB</td>' +

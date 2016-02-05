@@ -210,6 +210,7 @@
                 startCountdownToNextTest();
             }
         }, config.schedule.intervalInSeconds * ONE_SECOND);
+        printCsvHeader();
         runTest();
         numberOfTests++;
         startCountdownToNextTest();
@@ -217,6 +218,5 @@
     };
 
     initializeSummaryTable();
-    printCsvHeader();
     setupListeners();
 })();

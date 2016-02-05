@@ -99,7 +99,6 @@
 
     var getPerformanceTiming = function (job) {
         job.timing = window.performance.getEntriesByName(job.response.url)[0];
-        console.log(job);
         job.file.callDurations.push(job.timing.duration);
         return job;
     };

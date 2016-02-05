@@ -35,12 +35,12 @@ function getAvg(array) {
     };
 
     var runTests = function () {
-        var printLog = function(logEntry) {
+        var printLog = function (logEntry) {
             var csvTextArea = document.getElementById('csvContent');
             csvTextArea.value += logEntry + '\n';
         };
 
-        var printCsvHeader = function(){
+        var printCsvHeader = function () {
             printLog('DateTime,FileSize,Status,Duration');
         };
         var generateJobs = function () {
@@ -98,6 +98,7 @@ function getAvg(array) {
         };
 
         var jobs = generateJobs();
+        printCsvHeader();
         recursivelyRunJob();
     };
 
@@ -116,5 +117,13 @@ function getAvg(array) {
     document
         .getElementById('run')
         .addEventListener('click', runTests);
+
+    document
+        .getElementById('csvContent')
+        .addEventListener('click', function (event) {
+            var csvTextArea = event.target;
+            csvTextArea.focus();
+            csvTextArea.select();
+        });
 
 })();

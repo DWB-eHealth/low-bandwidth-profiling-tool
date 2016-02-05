@@ -1,5 +1,11 @@
 (function () {
-    var ONE_SECOND = 1000;
+    var ONE_SECOND = 1000,
+        $csvLogs,
+        $timeToNextTest,
+        $progressSummary,
+        $resultsSummary,
+        $testsCompleteMessage,
+        $runButton;
 
     var config = {
         schedule: {
@@ -22,48 +28,58 @@
     };
 
     var saveResultsToLocalStorage = function () {
-        var payload = {},
-            csvTextArea = document.getElementById('csvContent');
+        var payload = {};
 
         config.files.forEach(function (file) {
             payload[file.filename] = file.callDurations;
         });
 
         window.localStorage.setItem('callDurations', JSON.stringify(payload));
-        window.localStorage.setItem('logs', csvTextArea.value);
+        window.localStorage.setItem('logs', $csvLogs.value);
     };
 
     var loadResultsFromLocalStorage = function () {
-        var savedCallDurations = JSON.parse(window.localStorage.getItem('callDurations')) || {},
-            logs = window.localStorage.getItem('logs'),
-            csvTextArea = document.getElementById('csvContent');
+        var storedResults = JSON.parse(window.localStorage.getItem('callDurations')) || {};
 
-        csvTextArea.value = logs;
+        $csvLogs.value = window.localStorage.getItem('logs');
         config.files.forEach(function (file) {
-            file.callDurations = savedCallDurations[file.filename] || [];
+            file.callDurations = storedResults[file.filename] || [];
             updateSummaryTable({'file': file});
         });
     };
 
     var initializeSummaryTable = function () {
+        var createTableCell = function(className, contents) {
+            var cell = document.createElement('td');
+            cell.className = className;
+            cell.innerHTML = contents;
+            return cell;
+        };
+
         config.files.forEach(function (file) {
+            file.summaryTableRow = {
+                requests: createTableCell('requests', 0),
+                min: createTableCell('min', 0),
+                max: createTableCell('max', 0),
+                avg: createTableCell('avg', 0),
+                speed: createTableCell('speed', 0),
+            };
+
             var row = document.createElement('tr');
-            row.setAttribute('id', file.size);
-            row.innerHTML = '<td>' + file.size + ' KB</td>' +
-                '<td class="requests">0</td>' +
-                '<td class="min">0</td>' +
-                '<td class="max">0</td>' +
-                '<td class="avg">0</td>' +
-                '<td class="speed">0</td>';
-            document.getElementById('results').appendChild(row);
+            row.appendChild(createTableCell('fileSize', file.size + ' KB'));
+            row.appendChild(file.summaryTableRow.requests);
+            row.appendChild(file.summaryTableRow.min);
+            row.appendChild(file.summaryTableRow.max);
+            row.appendChild(file.summaryTableRow.avg);
+            row.appendChild(file.summaryTableRow.speed);
+            $resultsSummary.appendChild(row);
         });
     };
 
     var updateTimeToNextTest = function(timeToNextTest) {
-        var timeToNextTestDom = document.getElementById('timeToNextTest');
         var minutes = parseInt(timeToNextTest / 60);
         var seconds = timeToNextTest % 60;
-        timeToNextTestDom.innerHTML = minutes + ':' + (seconds < 10 ? '0': '') + seconds;
+        $timeToNextTest.innerHTML = minutes + ':' + (seconds < 10 ? '0': '') + seconds;
     };
 
     var startCountdownToNextTest = function() {
@@ -72,7 +88,6 @@
             timeToNextTest--;
             if (timeToNextTest <= 0) {
                 clearInterval(interval);
-                //Remove countdown message
             } else {
                 updateTimeToNextTest(timeToNextTest);
             }
@@ -82,29 +97,24 @@
     };
 
     var updateStatus = function(inProgress) {
-        var progressDom = document.getElementById('progressOfTests');
-        var testsCompleteDom = document.getElementById('testsComplete');
-        var runButton = document.getElementById('run');
         if(inProgress) {
-            runButton.disabled = true;
-            progressDom.style.display = 'inline';
-            testsCompleteDom.style.display = 'none';
+            $runButton.disabled = true;
+            $progressSummary.style.display = 'inline';
+            $testsCompleteMessage.style.display = 'none';
         } else {
-            runButton.disabled = false;
-            progressDom.style.display = 'none';
-            testsCompleteDom.style.display = 'inline';
+            $runButton.disabled = false;
+            $progressSummary.style.display = 'none';
+            $testsCompleteMessage.style.display = 'inline';
         }
     };
 
     var printLog = function (logEntry) {
-        var csvTextArea = document.getElementById('csvContent');
-        csvTextArea.value += logEntry + '\n';
-        csvTextArea.scrollTop = csvTextArea.scrollHeight
+        $csvLogs.value += logEntry + '\n';
+        $csvLogs.scrollTop = $csvLogs.scrollHeight
     };
 
     var printCsvHeader = function () {
-        var csvTextArea = document.getElementById('csvContent');
-        if(csvTextArea.value.length == 0) {
+        if($csvLogs.value.length == 0) {
             printLog('DateTime,Href,Status,ContentLength,Duration');
         }
     };
@@ -123,11 +133,10 @@
     };
 
     var setupListeners = function () {
-        document.getElementById('run').addEventListener('click', scheduleTests);
-        document.getElementById('csvContent').addEventListener('click', function (event) {
-            var csvTextArea = event.target;
-            csvTextArea.focus();
-            csvTextArea.select();
+        $runButton.addEventListener('click', scheduleTests);
+        $csvLogs.addEventListener('click', function () {
+            $csvLogs.focus();
+            $csvLogs.select();
         });
     };
 
@@ -195,13 +204,12 @@
     };
 
     var updateSummaryTable = function (job) {
-        var row = document.getElementById(job.file.size),
-            stats = calculateStatistics(job.file);
-        row.getElementsByClassName('requests')[0].innerHTML = stats.requests;
-        row.getElementsByClassName('min')[0].innerHTML = formatDecimals(stats.min);
-        row.getElementsByClassName('max')[0].innerHTML = formatDecimals(stats.max);
-        row.getElementsByClassName('avg')[0].innerHTML = formatDecimals(stats.avg);
-        row.getElementsByClassName('speed')[0].innerHTML = formatDecimals(stats.speed);
+        var stats = calculateStatistics(job.file);
+        job.file.summaryTableRow.requests.innerHTML = stats.requests;
+        job.file.summaryTableRow.min.innerHTML = formatDecimals(stats.min);
+        job.file.summaryTableRow.max.innerHTML = formatDecimals(stats.max);
+        job.file.summaryTableRow.avg.innerHTML = formatDecimals(stats.avg);
+        job.file.summaryTableRow.speed.innerHTML = formatDecimals(stats.speed);
     };
 
     var runTest = function () {
@@ -244,6 +252,13 @@
         startCountdownToNextTest();
         updateStatus(true);
     };
+
+    $csvLogs = document.getElementById('csvContent');
+    $timeToNextTest = document.getElementById('timeToNextTest');
+    $progressSummary = document.getElementById('progressOfTests');
+    $resultsSummary = document.getElementById('results');
+    $testsCompleteMessage = document.getElementById('testsComplete');
+    $runButton = document.getElementById('run');
 
     initializeSummaryTable();
     setupListeners();

@@ -7,15 +7,15 @@
         },
         files: [{
             size: '1',
-            path: "/1KB.txt",
+            filename: '1KB.txt',
             numberOfRequests: 25
         }, {
             size: '10',
-            path: "/10KB.txt",
+            filename: '10KB.txt',
             numberOfRequests: 10
         }, {
             size: '100',
-            path: "/100KB.txt",
+            filename: '100KB.txt',
             numberOfRequests: 2
         }]
     };
@@ -91,7 +91,7 @@
 
     var requestFile = function (job) {
         job.startTime = new Date;
-        return fetch(job.file.path + '?' + (+job.startTime)).then(function (response) {
+        return fetch(window.location + job.file.filename + '?' + (+job.startTime)).then(function (response) {
             job.response = response;
             return job;
         });

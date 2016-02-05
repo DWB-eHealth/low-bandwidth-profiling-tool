@@ -34,96 +34,108 @@ function getAvg(array) {
         }]
     };
 
-    var runTests = function () {
-        var printLog = function (logEntry) {
-            var csvTextArea = document.getElementById('csvContent');
-            csvTextArea.value += logEntry + '\n';
-        };
-
-        var printCsvHeader = function () {
-            printLog('DateTime,FileSize,Status,Duration');
-        };
-        var generateJobs = function () {
-            var jobList = [];
-            config.files.forEach(function (file) {
-                for (var i = 0; i < file.runs; i++) {
-                    jobList.push(file);
-                }
-            });
-            return jobList;
-        };
-
-        var recursivelyRunJob = function () {
-
-            if (jobs.length == 0) return;
-
-            var calculateResponseTime = function () {
-                var endTime = new Date;
-                var timeTaken = currentJob.callDurations;
-                timeTaken.push(endTime - startTime);
-                return endTime - startTime;
-            };
-
-            var updateUI = function () {
-                var timeTaken = currentJob.callDurations,
-                    row = document.getElementById(currentJob.size);
-
-                var requests = parseInt(row.getElementsByClassName('requests')[0].innerHTML);
-                row.getElementsByClassName('requests')[0].innerHTML = ++requests;
-                row.getElementsByClassName('min')[0].innerHTML = getMin(timeTaken);
-                row.getElementsByClassName('max')[0].innerHTML = getMax(timeTaken);
-                row.getElementsByClassName('avg')[0].innerHTML = getAvg(timeTaken);
-                row.getElementsByClassName('speed')[0].innerHTML = currentJob.size * 8 / (getAvg(timeTaken) / 1000);
-            };
-
-            var updateLogs = function (responseTime) {
-                var dateTime = startTime.toISOString();
-                printLog([dateTime, resourceURL, 'Status', responseTime].join(','));
-            };
-
-            var currentJob = jobs.shift(),
-                startTime = new Date,
-                resourceURL = currentJob.path + '?' + (+startTime);
-
-            var waitForRequestToComplete = function (response) {
-                return response.text();
-            };
-
-            fetch(resourceURL)
-                .then(waitForRequestToComplete)
-                .then(calculateResponseTime)
-                .then(updateLogs)
-                .then(updateUI)
-                .then(recursivelyRunJob);
-        };
-
-        var jobs = generateJobs();
-        printCsvHeader();
-        recursivelyRunJob();
+    var initializeSummaryTable = function () {
+        config.files.forEach(function (file) {
+            var row = document.createElement('tr');
+            row.setAttribute('id', file.size);
+            row.innerHTML = '<td>' + file.size + ' KB</td>' +
+                '<td class="requests">0</td>' +
+                '<td class="min">0</td>' +
+                '<td class="max">0</td>' +
+                '<td class="avg">0</td>' +
+                '<td class="speed">0</td>';
+            document.getElementById('results').appendChild(row);
+        });
     };
 
-    config.files.forEach(function (file) {
-        var row = document.createElement('tr');
-        row.setAttribute('id', file.size);
-        row.innerHTML = '<td>' + file.size + ' KB</td>' +
-            '<td class="requests">0</td>' +
-            '<td class="min">0</td>' +
-            '<td class="max">0</td>' +
-            '<td class="avg">0</td>' +
-            '<td class="speed">0</td>';
-        document.getElementById('results').appendChild(row);
-    });
+    var printLog = function (logEntry) {
+        var csvTextArea = document.getElementById('csvContent');
+        csvTextArea.value += logEntry + '\n';
+    };
 
-    document
-        .getElementById('run')
-        .addEventListener('click', runTests);
+    var printCsvHeader = function () {
+        printLog('DateTime,Href,Status,ContentLength,Duration');
+    };
 
-    document
-        .getElementById('csvContent')
-        .addEventListener('click', function (event) {
+    var setupListeners = function () {
+        document.getElementById('run').addEventListener('click', runTests);
+        document.getElementById('csvContent').addEventListener('click', function (event) {
             var csvTextArea = event.target;
             csvTextArea.focus();
             csvTextArea.select();
         });
+    };
 
+    var generateJobs = function () {
+        var jobs = [];
+        config.files.forEach(function (file) {
+            for (var i = 0; i < file.runs; i++) {
+                jobs.push({
+                    file: file
+                });
+            }
+        });
+        return jobs;
+    };
+
+    var requestFile = function (job) {
+        job.startTime = new Date;
+        return fetch(job.file.path + '?' + (+job.startTime)).then(function (response) {
+            job.response = response;
+            return job;
+        });
+    };
+
+    var waitForRequestToComplete = function (job) {
+        return job.response.text().then(function () {
+            return job;
+        });
+    };
+
+    var getPerformanceTiming = function (job) {
+        job.timing = window.performance.getEntriesByName(job.response.url)[0];
+        job.file.callDurations.push(job.timing.duration);
+        return job;
+    };
+
+    var updateLogs = function (job) {
+        printLog([
+            job.startTime.toISOString(),
+            job.response.url,
+            job.response.status,
+            job.response.headers.get('Content-length'),
+            job.timing.duration
+        ].join(','));
+        return job;
+    };
+
+    var updateSummaryTable = function (job) {
+        console.log(job);
+        var row = document.getElementById(job.file.size);
+        row.getElementsByClassName('requests')[0].innerHTML = job.file.callDurations.length;
+        row.getElementsByClassName('min')[0].innerHTML = getMin(job.file.callDurations);
+        row.getElementsByClassName('max')[0].innerHTML = getMax(job.file.callDurations);
+        row.getElementsByClassName('avg')[0].innerHTML = getAvg(job.file.callDurations);
+        row.getElementsByClassName('speed')[0].innerHTML = job.file.size * 8 / (getAvg(job.file.callDurations) / 1000);
+    };
+
+    var runTests = function () {
+        var recursivelyRunJob = function () {
+            if (jobList.length == 0) return;
+
+            requestFile(jobList.shift())
+                .then(waitForRequestToComplete)
+                .then(getPerformanceTiming)
+                .then(updateLogs)
+                .then(updateSummaryTable)
+                .then(recursivelyRunJob);
+        };
+
+        var jobList = generateJobs();
+        recursivelyRunJob();
+    };
+
+    initializeSummaryTable();
+    printCsvHeader();
+    setupListeners();
 })();

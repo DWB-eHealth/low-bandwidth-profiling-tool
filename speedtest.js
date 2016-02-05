@@ -35,16 +35,33 @@ function getAvg(array) {
     };
 
     var runTests = function () {
-        var jobs = generateJobs();
+        var printLog = function(logEntry) {
+            var csvTextArea = document.getElementById('csvContent');
+            csvTextArea.value += logEntry + '\n';
+        };
+
+        var printCsvHeader = function(){
+            printLog('DateTime,FileSize,Status,Duration');
+        };
+        var generateJobs = function () {
+            var jobList = [];
+            config.files.forEach(function (file) {
+                for (var i = 0; i < file.runs; i++) {
+                    jobList.push(file);
+                }
+            });
+            return jobList;
+        };
 
         var recursivelyRunJob = function () {
 
             if (jobs.length == 0) return;
 
             var calculateResponseTime = function () {
-                var endTime = +new Date;
+                var endTime = new Date;
                 var timeTaken = currentJob.callDurations;
                 timeTaken.push(endTime - startTime);
+                return endTime - startTime;
             };
 
             var updateUI = function () {
@@ -59,10 +76,14 @@ function getAvg(array) {
                 row.getElementsByClassName('speed')[0].innerHTML = currentJob.size * 8 / (getAvg(timeTaken) / 1000);
             };
 
+            var updateLogs = function (responseTime) {
+                var dateTime = startTime.toISOString();
+                printLog([dateTime, resourceURL, 'Status', responseTime].join(','));
+            };
 
             var currentJob = jobs.shift(),
-                startTime = +new Date,
-                resourceURL = currentJob.path + '?' + startTime;
+                startTime = new Date,
+                resourceURL = currentJob.path + '?' + (+startTime);
 
             var waitForRequestToComplete = function (response) {
                 return response.text();
@@ -71,22 +92,13 @@ function getAvg(array) {
             fetch(resourceURL)
                 .then(waitForRequestToComplete)
                 .then(calculateResponseTime)
+                .then(updateLogs)
                 .then(updateUI)
                 .then(recursivelyRunJob);
         };
 
+        var jobs = generateJobs();
         recursivelyRunJob();
-
-    };
-
-    var generateJobs = function () {
-        var jobs = [];
-        config.files.forEach(function (file) {
-            for (var i = 0; i < file.runs; i++) {
-                jobs.push(file);
-            }
-        });
-        return jobs;
     };
 
     config.files.forEach(function (file) {

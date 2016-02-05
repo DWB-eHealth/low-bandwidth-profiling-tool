@@ -11,9 +11,9 @@
 
     <div class="container">
         <h1>Speed test tool</h1>
-        <button id="run" class="run">Run tests</button>
+        <button id="run" class="run" autofocus>Run tests</button>
         <div>
-            <table style="width:100%;table-layout:fixed" border="1" cellspacing="0" cellpadding="10">
+            <table class="results" cellspacing="0" cellpadding="10">
                 <thead>
                     <th>File size</th>
                     <th>Requests</th>
@@ -24,6 +24,10 @@
                 </thead>
                 <tbody id="results"></tbody>
             </table>
+        </div>
+
+        <div class="csvContent">
+            <textarea id="csvContent" rows="10" readonly></textarea>
         </div>
     </div>
 

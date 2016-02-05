@@ -3,31 +3,54 @@
     margin: 0 auto;
     padding: 10px;
 }
+
 .progressBar {
     width: 100%;
 }
+
 .left {
     float: left;
 }
+
 .right {
     float: right;
 }
+
 .card {
     margin: 50px 10px;
     padding: 10px;
 }
+
 .clear {
     clear: both;
 }
+
 .danger {
     color: #c0392b;
 }
+
 .success {
     color: #27ae60;
 }
+
 .normal {
     color: #2980b9;
 }
+
 .run {
     margin: 15px 0px;
+}
+
+.results {
+    width: 100%;
+    table-layout: fixed;
+}
+.csvContent {
+    margin: 10px 0;
+}
+.csvContent textarea {
+    width:90%;
+}
+table, table td, table th {
+    border: 1px solid black;
 }

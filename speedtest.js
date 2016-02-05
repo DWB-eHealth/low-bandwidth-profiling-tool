@@ -5,7 +5,8 @@
         $progressSummary,
         $resultsSummary,
         $testsCompleteMessage,
-        $runButton;
+        $runTestSuite,
+        $clearResults;
 
     var config = {
         schedule: {
@@ -46,6 +47,15 @@
             file.callDurations = storedResults[file.filename] || [];
             updateSummaryTable({'file': file});
         });
+    };
+
+    var clearResults = function () {
+        config.files.forEach(function (file) {
+            file.callDurations = [];
+        });
+        $csvLogs.value = '';
+        saveResultsToLocalStorage();
+        loadResultsFromLocalStorage();
     };
 
     var initializeSummaryTable = function () {
@@ -98,11 +108,13 @@
 
     var updateStatus = function(inProgress) {
         if(inProgress) {
-            $runButton.disabled = true;
+            $runTestSuite.disabled = true;
+            $clearResults.disabled = true;
             $progressSummary.style.display = 'inline';
             $testsCompleteMessage.style.display = 'none';
         } else {
-            $runButton.disabled = false;
+            $runTestSuite.disabled = false;
+            $clearResults.disabled = false;
             $progressSummary.style.display = 'none';
             $testsCompleteMessage.style.display = 'inline';
         }
@@ -133,7 +145,8 @@
     };
 
     var setupListeners = function () {
-        $runButton.addEventListener('click', scheduleTests);
+        $runTestSuite.addEventListener('click', scheduleTests);
+        $clearResults.addEventListener('click', clearResults);
         $csvLogs.addEventListener('click', function () {
             $csvLogs.focus();
             $csvLogs.select();
@@ -153,6 +166,9 @@
     };
 
     var calculateStatistics = function (file) {
+        var handleDivisionByZero = function(value) {
+            return file.callDurations.length == 0 ? 0 : value;
+        };
         var average = function (array) {
             return array.reduce(function (a, b) {
                     return a + b;
@@ -162,11 +178,10 @@
 
         return {
             requests: file.callDurations.length,
-            min: Math.min.apply(null, file.callDurations),
-            max: Math.max.apply(null, file.callDurations),
-            avg: averageTime,
-            speed: file.size * 8 / (averageTime / ONE_SECOND)
-
+            min: handleDivisionByZero(Math.min.apply(null, file.callDurations)),
+            max: handleDivisionByZero(Math.max.apply(null, file.callDurations)),
+            avg: handleDivisionByZero(averageTime),
+            speed: handleDivisionByZero(file.size * 8 / (averageTime / ONE_SECOND))
         };
     };
 
@@ -258,7 +273,8 @@
     $progressSummary = document.getElementById('progressOfTests');
     $resultsSummary = document.getElementById('results');
     $testsCompleteMessage = document.getElementById('testsComplete');
-    $runButton = document.getElementById('run');
+    $runTestSuite = document.getElementById('run');
+    $clearResults = document.getElementById('clearResults');
 
     initializeSummaryTable();
     setupListeners();

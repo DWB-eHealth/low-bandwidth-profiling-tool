@@ -12,6 +12,11 @@
     <div class="container">
         <h1>Speed test tool</h1>
         <button id="run" class="run" autofocus>Run tests</button>
+        <span id="testsComplete" class="testsComplete" style="display: none">Tests Complete</span>
+        <span id="progressOfTests" style="display: none">
+            <span class="inProgressMessage">Tests in Progress</span>
+            <span>Next test will run in: <span id="timeToNextTest"></span></span>
+        </span>
         <div>
             <h3>Summary of Results</h3>
             <table class="results" cellspacing="0" cellpadding="10">

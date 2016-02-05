@@ -1,4 +1,5 @@
 (function () {
+    var ONE_SECOND = 1000;
 
     var config = {
         schedule: {
@@ -32,6 +33,43 @@
                 '<td class="speed">0</td>';
             document.getElementById('results').appendChild(row);
         });
+    };
+
+    var updateTimeToNextTest = function(timeToNextTest) {
+        var timeToNextTestDom = document.getElementById('timeToNextTest');
+        var minutes = parseInt(timeToNextTest / 60);
+        var seconds = timeToNextTest % 60;
+        timeToNextTestDom.innerHTML = minutes + ':' + (seconds < 10 ? '0': '') + seconds;
+    };
+
+    var startCountdownToNextTest = function() {
+        var timeToNextTest = config.schedule.intervalInSeconds;
+        var interval = setInterval(function () {
+            timeToNextTest--;
+            if (timeToNextTest <= 0) {
+                clearInterval(interval);
+                //Remove countdown message
+            } else {
+                updateTimeToNextTest(timeToNextTest);
+            }
+        }, ONE_SECOND);
+
+        updateTimeToNextTest(timeToNextTest);
+    };
+
+    var updateStatus = function(inProgress) {
+        var progressDom = document.getElementById('progressOfTests');
+        var testsCompleteDom = document.getElementById('testsComplete');
+        var runButton = document.getElementById('run');
+        if(inProgress) {
+            runButton.disabled = true;
+            progressDom.style.display = 'inline';
+            testsCompleteDom.style.display = 'none';
+        } else {
+            runButton.disabled = false;
+            progressDom.style.display = 'none';
+            testsCompleteDom.style.display = 'inline';
+        }
     };
 
     var printLog = function (logEntry) {
@@ -92,7 +130,7 @@
             min: Math.min.apply(null, file.callDurations),
             max: Math.max.apply(null, file.callDurations),
             avg: averageTime,
-            speed: file.size * 8 / (averageTime / 1000)
+            speed: file.size * 8 / (averageTime / ONE_SECOND)
 
         };
     };
@@ -142,7 +180,7 @@
         var recursivelyRunJob = function () {
             if (jobList.length == 0) return;
 
-            requestFile(jobList.shift())
+            return requestFile(jobList.shift())
                 .then(waitForRequestToComplete)
                 .then(getPerformanceTiming)
                 .then(updateLogs)
@@ -155,20 +193,27 @@
         // flush resource timings because of buffer limit of 150 imposed by browser
         window.performance.clearResourceTimings();
 
-        recursivelyRunJob();
+        return recursivelyRunJob();
     };
 
     var scheduleTests = function () {
         var numberOfTests = 0;
         var interval = setInterval(function () {
-            runTest();
             numberOfTests++;
             if (numberOfTests >= config.schedule.numberOfTests) {
                 clearInterval(interval);
+                runTest().then(function() {
+                    updateStatus(false);
+                });
+            } else {
+                runTest();
+                startCountdownToNextTest();
             }
-        }, config.schedule.intervalInSeconds * 1000);
+        }, config.schedule.intervalInSeconds * ONE_SECOND);
         runTest();
         numberOfTests++;
+        startCountdownToNextTest();
+        updateStatus(true);
     };
 
     initializeSummaryTable();

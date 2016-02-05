@@ -53,6 +53,15 @@
     font-family: monospace;
     font-size: 12px;
 }
+.inProgressMessage {
+    font-weight: bold;
+    color: red;
+}
+.testsComplete {
+    font-weight: bold;
+    color: green;
+}
+
 table, table td, table th {
     border: 1px solid black;
     text-align: center;

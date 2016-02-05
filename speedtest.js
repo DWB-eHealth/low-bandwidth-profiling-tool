@@ -37,10 +37,16 @@
     var printLog = function (logEntry) {
         var csvTextArea = document.getElementById('csvContent');
         csvTextArea.value += logEntry + '\n';
+        csvTextArea.scrollTop = csvTextArea.scrollHeight
     };
 
     var printCsvHeader = function () {
         printLog('DateTime,Href,Status,ContentLength,Duration');
+    };
+
+    var formatDecimals = function(number, decimalPlaces) {
+        if(decimalPlaces === undefined) decimalPlaces = 2;
+        return Number(number).toFixed(decimalPlaces);
     };
 
     var setupListeners = function () {
@@ -118,10 +124,10 @@
         var row = document.getElementById(job.file.size),
             stats = calculateStatistics(job.file);
         row.getElementsByClassName('requests')[0].innerHTML = stats.requests;
-        row.getElementsByClassName('min')[0].innerHTML = stats.min;
-        row.getElementsByClassName('max')[0].innerHTML = stats.max;
-        row.getElementsByClassName('avg')[0].innerHTML = stats.avg;
-        row.getElementsByClassName('speed')[0].innerHTML = stats.speed;
+        row.getElementsByClassName('min')[0].innerHTML = formatDecimals(stats.min);
+        row.getElementsByClassName('max')[0].innerHTML = formatDecimals(stats.max);
+        row.getElementsByClassName('avg')[0].innerHTML = formatDecimals(stats.avg);
+        row.getElementsByClassName('speed')[0].innerHTML = formatDecimals(stats.speed, 0);
     };
 
     var runTest = function () {

@@ -50,7 +50,10 @@
 }
 .csvContent textarea {
     width:90%;
+    font-family: monospace;
+    font-size: 12px;
 }
 table, table td, table th {
     border: 1px solid black;
+    text-align: center;
 }

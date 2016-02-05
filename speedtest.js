@@ -1,6 +1,10 @@
 (function () {
 
     var config = {
+        schedule: {
+            numberOfTests: 8,
+            intervalInSeconds: 60 * 60
+        },
         files: [{
             size: '1',
             path: "/1KB.txt",
@@ -40,7 +44,7 @@
     };
 
     var setupListeners = function () {
-        document.getElementById('run').addEventListener('click', runTests);
+        document.getElementById('run').addEventListener('click', scheduleTests);
         document.getElementById('csvContent').addEventListener('click', function (event) {
             var csvTextArea = event.target;
             csvTextArea.focus();
@@ -95,6 +99,7 @@
 
     var getPerformanceTiming = function (job) {
         job.timing = window.performance.getEntriesByName(job.response.url)[0];
+        console.log(job);
         job.file.callDurations.push(job.timing.duration);
         return job;
     };
@@ -120,7 +125,7 @@
         row.getElementsByClassName('speed')[0].innerHTML = stats.speed;
     };
 
-    var runTests = function () {
+    var runTest = function () {
         var recursivelyRunJob = function () {
             if (jobList.length == 0) return;
 
@@ -133,7 +138,24 @@
         };
 
         var jobList = generateJobs();
+
+        // flush resource timings because of buffer limit of 150 imposed by browser
+        window.performance.clearResourceTimings();
+
         recursivelyRunJob();
+    };
+
+    var scheduleTests = function () {
+        var numberOfTests = 0;
+        var interval = setInterval(function () {
+            runTest();
+            numberOfTests++;
+            if (numberOfTests >= config.schedule.numberOfTests) {
+                clearInterval(interval);
+            }
+        }, config.schedule.intervalInSeconds * 1000);
+        runTest();
+        numberOfTests++;
     };
 
     initializeSummaryTable();

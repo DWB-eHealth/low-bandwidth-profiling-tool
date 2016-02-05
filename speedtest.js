@@ -45,7 +45,15 @@
     };
 
     var formatDecimals = function(number, decimalPlaces) {
-        if(decimalPlaces === undefined) decimalPlaces = 2;
+        if(decimalPlaces === undefined) {
+            if (number >= 1000) {
+                decimalPlaces = 0;
+            } else if (number >= 10) {
+                decimalPlaces = 1;
+            } else {
+                decimalPlaces = 2;
+            }
+        }
         return Number(number).toFixed(decimalPlaces);
     };
 
@@ -127,7 +135,7 @@
         row.getElementsByClassName('min')[0].innerHTML = formatDecimals(stats.min);
         row.getElementsByClassName('max')[0].innerHTML = formatDecimals(stats.max);
         row.getElementsByClassName('avg')[0].innerHTML = formatDecimals(stats.avg);
-        row.getElementsByClassName('speed')[0].innerHTML = formatDecimals(stats.speed, 0);
+        row.getElementsByClassName('speed')[0].innerHTML = formatDecimals(stats.speed);
     };
 
     var runTest = function () {

@@ -21,6 +21,30 @@
         }]
     };
 
+    var saveResultsToLocalStorage = function () {
+        var payload = {},
+            csvTextArea = document.getElementById('csvContent');
+
+        config.files.forEach(function (file) {
+            payload[file.filename] = file.callDurations;
+        });
+
+        window.localStorage.setItem('callDurations', JSON.stringify(payload));
+        window.localStorage.setItem('logs', csvTextArea.value);
+    };
+
+    var loadResultsFromLocalStorage = function () {
+        var savedCallDurations = JSON.parse(window.localStorage.getItem('callDurations')) || {},
+            logs = window.localStorage.getItem('logs'),
+            csvTextArea = document.getElementById('csvContent');
+
+        csvTextArea.value = logs;
+        config.files.forEach(function (file) {
+            file.callDurations = savedCallDurations[file.filename] || [];
+            updateSummaryTable({'file': file});
+        });
+    };
+
     var initializeSummaryTable = function () {
         config.files.forEach(function (file) {
             var row = document.createElement('tr');
@@ -79,7 +103,10 @@
     };
 
     var printCsvHeader = function () {
-        printLog('DateTime,Href,Status,ContentLength,Duration');
+        var csvTextArea = document.getElementById('csvContent');
+        if(csvTextArea.value.length == 0) {
+            printLog('DateTime,Href,Status,ContentLength,Duration');
+        }
     };
 
     var formatDecimals = function(number, decimalPlaces) {
@@ -107,7 +134,6 @@
     var generateJobs = function () {
         var jobs = [];
         config.files.forEach(function (file) {
-            file.callDurations || (file.callDurations = []);
             for (var i = 0; i < file.numberOfRequests; i++) {
                 jobs.push({
                     file: file
@@ -152,6 +178,7 @@
     var getPerformanceTiming = function (job) {
         job.timing = window.performance.getEntriesByName(job.response.url)[0];
         job.file.callDurations.push(job.timing.duration);
+        saveResultsToLocalStorage();
         return job;
     };
 
@@ -163,6 +190,7 @@
             job.response.headers.get('Content-length'),
             job.timing.duration
         ].join(','));
+        saveResultsToLocalStorage();
         return job;
     };
 
@@ -219,4 +247,5 @@
 
     initializeSummaryTable();
     setupListeners();
+    loadResultsFromLocalStorage();
 })();

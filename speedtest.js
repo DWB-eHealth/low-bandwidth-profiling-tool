@@ -1,36 +1,18 @@
-function getMin(array) {
-    return Math.min.apply(null, array);
-}
-
-function getMax(array) {
-    return Math.max.apply(null, array);
-}
-
-function getAvg(array) {
-    return array.reduce(function (sum, a, i, ar) {
-        sum += a;
-        return i == ar.length - 1 ? (ar.length == 0 ? 0 : sum / ar.length) : sum
-    }, 0);
-}
-
 (function () {
 
     var config = {
         files: [{
             size: '1',
             path: "/1KB.txt",
-            runs: 25,
-            callDurations: []
+            numberOfRequests: 25
         }, {
             size: '10',
             path: "/10KB.txt",
-            runs: 10,
-            callDurations: []
+            numberOfRequests: 10
         }, {
             size: '100',
             path: "/100KB.txt",
-            runs: 2,
-            callDurations: []
+            numberOfRequests: 2
         }]
     };
 
@@ -69,13 +51,32 @@ function getAvg(array) {
     var generateJobs = function () {
         var jobs = [];
         config.files.forEach(function (file) {
-            for (var i = 0; i < file.runs; i++) {
+            file.callDurations || (file.callDurations = []);
+            for (var i = 0; i < file.numberOfRequests; i++) {
                 jobs.push({
                     file: file
                 });
             }
         });
         return jobs;
+    };
+
+    var calculateStatistics = function (file) {
+        var average = function (array) {
+            return array.reduce(function (a, b) {
+                    return a + b;
+                }, 0) / array.length;
+        };
+        var averageTime = average(file.callDurations);
+
+        return {
+            requests: file.callDurations.length,
+            min: Math.min.apply(null, file.callDurations),
+            max: Math.max.apply(null, file.callDurations),
+            avg: averageTime,
+            speed: file.size * 8 / (averageTime / 1000)
+
+        };
     };
 
     var requestFile = function (job) {
@@ -110,13 +111,13 @@ function getAvg(array) {
     };
 
     var updateSummaryTable = function (job) {
-        console.log(job);
-        var row = document.getElementById(job.file.size);
-        row.getElementsByClassName('requests')[0].innerHTML = job.file.callDurations.length;
-        row.getElementsByClassName('min')[0].innerHTML = getMin(job.file.callDurations);
-        row.getElementsByClassName('max')[0].innerHTML = getMax(job.file.callDurations);
-        row.getElementsByClassName('avg')[0].innerHTML = getAvg(job.file.callDurations);
-        row.getElementsByClassName('speed')[0].innerHTML = job.file.size * 8 / (getAvg(job.file.callDurations) / 1000);
+        var row = document.getElementById(job.file.size),
+            stats = calculateStatistics(job.file);
+        row.getElementsByClassName('requests')[0].innerHTML = stats.requests;
+        row.getElementsByClassName('min')[0].innerHTML = stats.min;
+        row.getElementsByClassName('max')[0].innerHTML = stats.max;
+        row.getElementsByClassName('avg')[0].innerHTML = stats.avg;
+        row.getElementsByClassName('speed')[0].innerHTML = stats.speed;
     };
 
     var runTests = function () {

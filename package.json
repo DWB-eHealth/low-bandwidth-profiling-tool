@@ -1,0 +1,22 @@
+{
+  "name": "speed-test-tool",
+  "version": "1.0.0",
+  "description": "Simple tool to evaluate Internet connectivity",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DWB-eHealth/speed-test-tool.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DWB-eHealth/speed-test-tool/issues"
+  },
+  "homepage": "https://github.com/DWB-eHealth/speed-test-tool#readme",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-serve": "^1.2.0"
+  }
+}

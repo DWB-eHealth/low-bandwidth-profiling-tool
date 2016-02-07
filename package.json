@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Simple tool to evaluate Internet connectivity",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run lite",
+    "lite": "lite-server"
   },
   "repository": {
     "type": "git",
@@ -16,7 +17,6 @@
   },
   "homepage": "https://github.com/DWB-eHealth/speed-test-tool#readme",
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-serve": "^1.2.0"
+    "lite-server": "^2.0.1"
   }
 }

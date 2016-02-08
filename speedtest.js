@@ -1,10 +1,14 @@
 (function () {
     var ONE_SECOND = 1000,
+        numberOfCompletedBatches,
         $csvLogs,
         $timeToNextTest,
+        $numberOfBatches,
+        $completedBatches,
         $progressSummary,
         $resultsSummary,
         $testsCompleteMessage,
+        $nextTestMessage,
         $runTestSuite,
         $clearResults;
 
@@ -106,13 +110,21 @@
         updateTimeToNextTest(timeToNextTest);
     };
 
-    var updateStatus = function(inProgress) {
-        if(inProgress) {
+    var updateBatchProgress = function() {
+        $numberOfBatches.innerHTML = config.schedule.numberOfTests;
+        $completedBatches.innerHTML = numberOfCompletedBatches;
+    };
+
+    var updateStatus = function(state) {
+        if(state == 'testsStarted') {
             $runTestSuite.disabled = true;
             $clearResults.disabled = true;
             $progressSummary.style.display = 'inline';
             $testsCompleteMessage.style.display = 'none';
-        } else {
+            $nextTestMessage.style.display = 'inline';
+        } else if (state == 'finalTestStarted') {
+            $nextTestMessage.style.display = 'none';
+        } else if (state == 'testsCompleted') {
             $runTestSuite.disabled = false;
             $clearResults.disabled = false;
             $progressSummary.style.display = 'none';
@@ -248,31 +260,38 @@
     };
 
     var scheduleTests = function () {
-        var numberOfTests = 0;
         var interval = setInterval(function () {
-            numberOfTests++;
-            if (numberOfTests >= config.schedule.numberOfTests) {
+            numberOfCompletedBatches++;
+            if (numberOfCompletedBatches >= config.schedule.numberOfTests) {
                 clearInterval(interval);
+                updateStatus('finalTestStarted');
                 runTest().then(function() {
-                    updateStatus(false);
+                    updateBatchProgress();
+                    updateStatus('testsCompleted');
                 });
             } else {
-                runTest();
+                runTest().then(updateBatchProgress);
                 startCountdownToNextTest();
             }
         }, config.schedule.intervalInSeconds * ONE_SECOND);
+
+        numberOfCompletedBatches = 0;
         printCsvHeader();
-        runTest();
-        numberOfTests++;
+        updateBatchProgress();
+        runTest().then(updateBatchProgress);
+        numberOfCompletedBatches++;
         startCountdownToNextTest();
-        updateStatus(true);
+        updateStatus('testsStarted');
     };
 
     $csvLogs = document.getElementById('csvContent');
     $timeToNextTest = document.getElementById('timeToNextTest');
+    $numberOfBatches = document.getElementById('numberOfBatches');
+    $completedBatches = document.getElementById('completedBatches');
     $progressSummary = document.getElementById('progressOfTests');
     $resultsSummary = document.getElementById('results');
     $testsCompleteMessage = document.getElementById('testsComplete');
+    $nextTestMessage = document.getElementById('nextTest');
     $runTestSuite = document.getElementById('run');
     $clearResults = document.getElementById('clearResults');
 

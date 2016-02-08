@@ -15,7 +15,19 @@
         <button id="clearResults" class="clearResults" autofocus>Clear Results</button>
         <span id="testsComplete" class="testsComplete" style="display: none">Tests Complete</span>
         <span id="progressOfTests" style="display: none">
-            <span class="inProgressMessage">Tests in Progress</span> <span>(Next test will run in: <span id="timeToNextTest"></span>)</span>
+            <span class="inProgressMessage">Tests in Progress</span>
+            <span>
+                (
+                <span id="completedBatches">0</span>
+                of
+                <span id="numberOfBatches">10</span>
+                tests complete.
+            </span>
+            <span id="nextTest">
+                Next test will run in:
+                <span id="timeToNextTest"></span>
+            </span>
+            )
         </span>
         <div>
             <h3>Summary of Results</h3>

@@ -14,7 +14,7 @@
 
     var config = {
         schedule: {
-            numberOfTests: 8,
+            numberOfTests: 12,
             intervalInSeconds: 60 * 60
         },
         files: [{
@@ -24,7 +24,7 @@
         }, {
             size: '10',
             filename: '10KB.txt',
-            numberOfRequests: 10
+            numberOfRequests: 5
         }, {
             size: '100',
             filename: '100KB.txt',

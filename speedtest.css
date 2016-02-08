@@ -40,7 +40,7 @@ body {
     color: #2980b9;
 }
 
-.run {
+.runTestSuite {
     margin: 15px 0px;
 }
 
@@ -60,7 +60,7 @@ body {
     font-weight: bold;
     color: red;
 }
-.testsComplete {
+.testSuiteComplete {
     font-weight: bold;
     color: green;
 }

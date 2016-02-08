@@ -2,13 +2,13 @@
     var ONE_SECOND = 1000,
         numberOfCompletedBatches,
         $csvLogs,
-        $timeToNextTest,
+        $timeToNextBatch,
         $numberOfBatches,
         $completedBatches,
         $progressSummary,
-        $resultsSummary,
-        $testsCompleteMessage,
-        $nextTestMessage,
+        $summaryTable,
+        $testSuiteCompleteMessage,
+        $nextBatchMessage,
         $runTestSuite,
         $clearResults;
 
@@ -76,7 +76,7 @@
                 min: createTableCell('min', 0),
                 max: createTableCell('max', 0),
                 avg: createTableCell('avg', 0),
-                speed: createTableCell('speed', 0),
+                speed: createTableCell('speed', 0)
             };
 
             var row = document.createElement('tr');
@@ -86,14 +86,14 @@
             row.appendChild(file.summaryTableRow.max);
             row.appendChild(file.summaryTableRow.avg);
             row.appendChild(file.summaryTableRow.speed);
-            $resultsSummary.appendChild(row);
+            $summaryTable.appendChild(row);
         });
     };
 
     var updateTimeToNextTest = function(timeToNextTest) {
         var minutes = parseInt(timeToNextTest / 60);
         var seconds = timeToNextTest % 60;
-        $timeToNextTest.innerHTML = minutes + ':' + (seconds < 10 ? '0': '') + seconds;
+        $timeToNextBatch.innerHTML = minutes + ':' + (seconds < 10 ? '0': '') + seconds;
     };
 
     var startCountdownToNextTest = function() {
@@ -120,15 +120,15 @@
             $runTestSuite.disabled = true;
             $clearResults.disabled = true;
             $progressSummary.style.display = 'inline';
-            $testsCompleteMessage.style.display = 'none';
-            $nextTestMessage.style.display = 'inline';
+            $testSuiteCompleteMessage.style.display = 'none';
+            $nextBatchMessage.style.display = 'inline';
         } else if (state == 'finalTestStarted') {
-            $nextTestMessage.style.display = 'none';
-        } else if (state == 'testsCompleted') {
+            $nextBatchMessage.style.display = 'none';
+        } else if (state == 'testSuiteCompleted') {
             $runTestSuite.disabled = false;
             $clearResults.disabled = false;
             $progressSummary.style.display = 'none';
-            $testsCompleteMessage.style.display = 'inline';
+            $testSuiteCompleteMessage.style.display = 'inline';
         }
     };
 
@@ -267,7 +267,7 @@
                 updateStatus('finalTestStarted');
                 runTest().then(function() {
                     updateBatchProgress();
-                    updateStatus('testsCompleted');
+                    updateStatus('testSuiteCompleted');
                 });
             } else {
                 runTest().then(updateBatchProgress);
@@ -284,15 +284,15 @@
         updateStatus('testsStarted');
     };
 
-    $csvLogs = document.getElementById('csvContent');
-    $timeToNextTest = document.getElementById('timeToNextTest');
+    $timeToNextBatch = document.getElementById('timeToNextBatch');
+    $nextBatchMessage = document.getElementById('nextBatch');
     $numberOfBatches = document.getElementById('numberOfBatches');
     $completedBatches = document.getElementById('completedBatches');
-    $progressSummary = document.getElementById('progressOfTests');
-    $resultsSummary = document.getElementById('results');
-    $testsCompleteMessage = document.getElementById('testsComplete');
-    $nextTestMessage = document.getElementById('nextTest');
-    $runTestSuite = document.getElementById('run');
+    $progressSummary = document.getElementById('progressOfTestSuite');
+    $testSuiteCompleteMessage = document.getElementById('testSuiteComplete');
+    $summaryTable = document.getElementById('summaryTable');
+    $csvLogs = document.getElementById('csvContent');
+    $runTestSuite = document.getElementById('runTestSuite');
     $clearResults = document.getElementById('clearResults');
 
     initializeSummaryTable();

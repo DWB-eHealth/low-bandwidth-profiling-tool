@@ -19,15 +19,15 @@
         },
         files: [{
             size: '1',
-            filename: '1KB.txt',
+            filename: '1KB.file',
             numberOfRequests: 25
         }, {
             size: '10',
-            filename: '10KB.txt',
+            filename: '10KB.file',
             numberOfRequests: 5
         }, {
             size: '100',
-            filename: '100KB.txt',
+            filename: '100KB.file',
             numberOfRequests: 2
         }]
     };

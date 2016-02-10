@@ -139,7 +139,7 @@
 
     var printCsvHeader = function () {
         if($csvLogs.value.length == 0) {
-            printLog('DateTime,Href,Status,ContentLength,Duration');
+            printLog('DateTime,Href,Status,ContentLength,Duration,TTFB,ContentDownloadTime');
         }
     };
 
@@ -224,7 +224,9 @@
             job.response.url,
             job.response.status,
             job.response.headers.get('Content-length'),
-            job.timing.duration
+            job.timing.duration,
+            job.timing.responseStart-job.timing.requestStart,
+            job.timing.responseEnd-job.timing.responseStart
         ].join(','));
         saveResultsToLocalStorage();
         return job;

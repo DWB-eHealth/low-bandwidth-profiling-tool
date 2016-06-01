@@ -48,7 +48,7 @@
         var storedResults = JSON.parse(window.localStorage.getItem('callDurations')) || {};
 
         $csvLogs.value = window.localStorage.getItem('logs');
-        $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + window.localStorage.getItem('logs'));
+        $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + encodeURIComponent(window.localStorage.getItem('logs')));
         config.files.forEach(function (file) {
             file.callDurations = storedResults[file.filename] || [];
             updateSummaryTable({'file': file});

@@ -37,7 +37,10 @@
         var payload = {};
 
         config.files.forEach(function (file) {
-            payload[file.filename] = file.callDurations;
+          payload[file.filename] = {
+            callDurations: file.callDurations,
+            latencies: file.latencies,
+          }
         });
 
         window.localStorage.setItem('callDurations', JSON.stringify(payload));
@@ -50,7 +53,9 @@
         $csvLogs.value = window.localStorage.getItem('logs');
         $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + encodeURIComponent(window.localStorage.getItem('logs')));
         config.files.forEach(function (file) {
-            file.callDurations = storedResults[file.filename] || [];
+            var payload = storedResults[file.filename] || {}
+            file.callDurations = payload.callDurations || [];
+            file.latencies = payload.latencies || [];
             updateSummaryTable({'file': file});
         });
     };
@@ -58,6 +63,7 @@
     var clearResults = function () {
         config.files.forEach(function (file) {
             file.callDurations = [];
+            file.latencies = [];
         });
         $csvLogs.value = '';
         saveResultsToLocalStorage();
@@ -75,6 +81,7 @@
         config.files.forEach(function (file) {
             file.summaryTableRow = {
                 requests: createTableCell('requests', 0),
+                latency: createTableCell('latency', 0),
                 min: createTableCell('min', 0),
                 max: createTableCell('max', 0),
                 avg: createTableCell('avg', 0),
@@ -84,6 +91,7 @@
             var row = document.createElement('tr');
             row.appendChild(createTableCell('fileSize', file.size + ' KB'));
             row.appendChild(file.summaryTableRow.requests);
+            row.appendChild(file.summaryTableRow.latency);
             row.appendChild(file.summaryTableRow.min);
             row.appendChild(file.summaryTableRow.max);
             row.appendChild(file.summaryTableRow.avg);
@@ -184,6 +192,7 @@
             return file.callDurations.length == 0 ? 0 : value;
         };
         var average = function (array) {
+            if(array.length === 0) return 0;
             return array.reduce(function (a, b) {
                     return a + b;
                 }, 0) / array.length;
@@ -192,6 +201,7 @@
 
         return {
             requests: file.callDurations.length,
+            latency: average(file.latencies),
             min: handleDivisionByZero(Math.min.apply(null, file.callDurations)),
             max: handleDivisionByZero(Math.max.apply(null, file.callDurations)),
             avg: handleDivisionByZero(averageTime),
@@ -216,6 +226,7 @@
     var getPerformanceTiming = function (job) {
         job.timing = window.performance.getEntriesByName(job.response.url)[0];
         job.file.callDurations.push(job.timing.duration);
+        job.file.latencies.push(job.timing.responseStart-job.timing.requestStart);
         saveResultsToLocalStorage();
         return job;
     };
@@ -237,6 +248,7 @@
     var updateSummaryTable = function (job) {
         var stats = calculateStatistics(job.file);
         job.file.summaryTableRow.requests.innerHTML = stats.requests;
+        job.file.summaryTableRow.latency.innerHTML = formatDecimals(stats.latency);
         job.file.summaryTableRow.min.innerHTML = formatDecimals(stats.min);
         job.file.summaryTableRow.max.innerHTML = formatDecimals(stats.max);
         job.file.summaryTableRow.avg.innerHTML = formatDecimals(stats.avg);

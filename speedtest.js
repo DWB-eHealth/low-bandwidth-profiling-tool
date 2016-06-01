@@ -2,6 +2,7 @@
     var ONE_SECOND = 1000,
         numberOfCompletedBatches,
         $csvLogs,
+        $csvDownload,
         $timeToNextBatch,
         $numberOfBatches,
         $completedBatches,
@@ -47,6 +48,7 @@
         var storedResults = JSON.parse(window.localStorage.getItem('callDurations')) || {};
 
         $csvLogs.value = window.localStorage.getItem('logs');
+        $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + window.localStorage.getItem('logs'));
         config.files.forEach(function (file) {
             file.callDurations = storedResults[file.filename] || [];
             updateSummaryTable({'file': file});
@@ -294,6 +296,7 @@
     $testSuiteCompleteMessage = document.getElementById('testSuiteComplete');
     $summaryTable = document.getElementById('summaryTable');
     $csvLogs = document.getElementById('csvContent');
+    $csvDownload = document.getElementById('csvDownload');
     $runTestSuite = document.getElementById('runTestSuite');
     $clearResults = document.getElementById('clearResults');
 

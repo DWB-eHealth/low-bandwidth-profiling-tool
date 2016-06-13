@@ -1,5 +1,5 @@
 {
-  "name": "Low Bandwidth Profiling Tool",
+  "name": "low-bandwidth-profiling-tool",
   "version": "1.0.0",
   "description": "Simple tool to profile low-bandwidth internet connections",
   "scripts": {

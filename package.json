@@ -1,7 +1,7 @@
 {
-  "name": "speed-test-tool",
+  "name": "Low Bandwidth Profiling Tool",
   "version": "1.0.0",
-  "description": "Simple tool to evaluate Internet connectivity",
+  "description": "Simple tool to profile low-bandwidth internet connections",
   "scripts": {
     "start": "npm run lite",
     "lite": "lite-server",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DWB-eHealth/speed-test-tool.git"
+    "url": "git+https://github.com/DWB-eHealth/low-bandwidth-profiling-tool.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/DWB-eHealth/speed-test-tool/issues"
+    "url": "https://github.com/DWB-eHealth/low-bandwidth-profiling-tool/issues"
   },
-  "homepage": "https://github.com/DWB-eHealth/speed-test-tool#readme",
+  "homepage": "https://github.com/DWB-eHealth/low-bandwidth-profiling-tool#readme",
   "devDependencies": {
     "fast-csv": "^1.0.0",
     "fs-promise": "^0.5.0",

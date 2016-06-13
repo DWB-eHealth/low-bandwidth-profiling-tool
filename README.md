@@ -1,5 +1,5 @@
-# speed-test-tool
-Simple tool to evaluate Internet connectivity
+# Low Bandwidth Profiling Tool
+Simple tool to profile low-bandwidth internet connections
 
 Running the app:
 

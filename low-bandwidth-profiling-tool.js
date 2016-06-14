@@ -45,19 +45,24 @@
 
         window.localStorage.setItem('callDurations', JSON.stringify(payload));
         window.localStorage.setItem('logs', $csvLogs.value);
+        setupLinkToDownloadLogs();
     };
 
     var loadResultsFromLocalStorage = function () {
         var storedResults = JSON.parse(window.localStorage.getItem('callDurations')) || {};
 
         $csvLogs.value = window.localStorage.getItem('logs');
-        $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + encodeURIComponent(window.localStorage.getItem('logs')));
+        setupLinkToDownloadLogs();
         config.files.forEach(function (file) {
             var payload = storedResults[file.filename] || {}
             file.callDurations = payload.callDurations || [];
             file.latencies = payload.latencies || [];
             updateSummaryTable({'file': file});
         });
+    };
+
+    var setupLinkToDownloadLogs = function() {
+        $csvDownload.setAttribute('href', "data:text/text;charset=utf-8," + encodeURIComponent(window.localStorage.getItem('logs')));
     };
 
     var clearResults = function () {

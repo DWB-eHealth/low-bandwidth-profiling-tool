@@ -52,9 +52,13 @@ body {
     margin: 10px 0;
 }
 .csvContent textarea {
+    margin-top: 20px;
     width:90%;
     font-family: "Lucida Console", monospace;
     font-size: 10px;
+}
+.csvContent a {
+    font-size: 14px;
 }
 .inProgressMessage {
     font-weight: bold;
